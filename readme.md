@@ -98,6 +98,10 @@
 
   - 칠해지지 않은 칸을 X 로 칠하기 = `remain_off()`
 
+#### Pattern decision algorithm
+
+  1. 
+
 #### Tirivial algorithm
 
   1. `if (sum(k) + len(k) - 1 == n) line()`
