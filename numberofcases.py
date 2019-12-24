@@ -194,3 +194,87 @@ m 개의 공을 n 개의 자리에 배치하는 경우의 수
     n(n^2 + 6n - 1) / 6 ==
     n(n + 3 - 10^(1/2))(n + 3 + 10^(1/2))/6
 '''
+
+DEBUG = True
+
+def permutations(iterable, r=None):
+    pool = tuple(iterable)
+    n = len(pool) # length of iterable 
+    r = n if r is None else r # length of permutation 
+    if r > n:
+        return
+    indices = list(range(n)) # indices of permutation 
+    cycles = list(range(n, n-r, -1))
+    if DEBUG:
+        print('indices[:r]', indices[:r], '<--', 'indices', indices)
+    yield tuple(pool[i] for i in indices[:r])
+    while n:
+        for i in reversed(range(r)):
+            cycles[i] -= 1
+            if cycles[i] == 0:
+                indices[i:] = indices[i+1:] + indices[i:i+1]
+                cycles[i] = n - i
+            else:
+                j = cycles[i]
+                indices[i], indices[-j] = indices[-j], indices[i]
+                if DEBUG: 
+                    # print('indices[:r]', indices[:r])
+                    print('indices[:r]', indices[:r], '<--', 'indices', indices)
+                yield tuple(pool[i] for i in indices[:r])
+                break
+        else:
+            return
+
+def permutations_t(iterable):
+    pool = tuple(iterable)
+    n = len(pool) # length of iterable 
+    indices = list(range(n)) # indices of permutation 
+    cycles = list(range(n, 0, -1))
+    if DEBUG:
+        print('indices', indices)
+    yield tuple(pool[i] for i in indices[:n])
+    while n:
+        for i in reversed(range(n)):
+            cycles[i] -= 1
+            if cycles[i] == 0:
+                indices[i:] = indices[i+1:] + indices[i:i+1]
+                cycles[i] = n - i
+            else:
+                j = cycles[i]
+                indices[i], indices[-j] = indices[-j], indices[i]
+                if DEBUG: 
+                    print('indices', indices)
+                yield tuple(pool[i] for i in indices[:n])
+                break
+        else:
+            return
+
+# print(list(permutations_t([0, 2, 2])))
+# print(list(permutations([10, 20, 30], 2)))
+from itertools import permutations as p
+print(set(list(p([3, 0, 0]))))
+print(set(list(p([2, 1, 0]))))
+print(set(list(p([1, 1, 1]))))
+
+'''
+(oo) ()
+(o) (o)
+
+(ooo) () ()
+(oo) (o) ()
+(o) (o) (o)
+
+(oooo) () () ()
+(ooo) (o) () ()
+(oo) (oo) () ()
+(oo) (o) (o) ()
+(o) (o) (o) (o)
+
+(ooooo) () () () ()
+(oooo) (o) () () ()
+(ooo) (oo) () () ()
+(ooo) (o) (o) () ()
+(oo) (oo) (o) (o) ()
+(oo) (o) (o) (o) ()
+(o) (o) (o) (o) (o)
+'''
