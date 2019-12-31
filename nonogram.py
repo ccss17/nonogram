@@ -251,10 +251,10 @@ def permutations_t(iterable):
 
 from itertools import permutations
 
-def division(num, limit=float('inf')):
+def division(num, limit=float('inf'), root=True):
     for main_chunk in range(min(num, limit), 0, -1):
         rest_chunk = num - main_chunk
-        rest_chunk_divisions = tuple(division(rest_chunk, limit=main_chunk))
+        rest_chunk_divisions = tuple(division(rest_chunk, limit=main_chunk, root=False))
         if rest_chunk_divisions:
             for rest_chunk_division in rest_chunk_divisions:
                 yield [main_chunk, *rest_chunk_division]
@@ -276,17 +276,40 @@ def test_division(space, n, m=None):
             print(v)
     print('='*20, 'END  TEST', '='*20)
 
-def test_permutation(space, n, m=None):
+def tmp_permutations(space, n, m=None):
     if m == None: 
         m = n+1
     for i in range(n, m):
-        print('='*20, 'permutations TEST for', i, '='*20)
+        # print('='*20, 'permutations TEST for', i, '='*20)
         for v in division_with_filled_space(space, i):
-            print(set(permutations(v)))
-    print('='*20, 'END  TEST', '='*20)
+            yield set(permutations(v))
+            # print(set(permutations(v)))
+            # print(tuple(permutations(v)))
+    # print('='*20, 'END  TEST', '='*20)
 
 # test_division(8, 4)
-test_permutation(8, 4)
+
+def f(keys, L):
+    S = len(keys)
+    B = sum(keys)
+    W = L - B
+    print('S:', S, 'B:', B, 'W:', W, 'W - (S - 1):', W - (S - 1))
+    rst = tuple(tmp_permutations(S+1, W - (S - 1)))
+    print(rst)
+    r = []
+    if rst:
+        for rs in rst:
+            pass
+    else:
+        for i, key in enumerate(keys):
+            for k in range(key):
+                r.append(True)
+            if i != len(keys) - 1:
+                r.append(False)
+    return r
+
+# print(f((3, 1), 5))
+f((1, 2), 5)
 
 # print(set(p([3, 0, 0])))
 # print(set(p([2, 1, 0])))
