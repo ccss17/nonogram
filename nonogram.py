@@ -73,7 +73,16 @@ class Nono:
         return arr
 
     def np_consensus(self, arr):
+        test = lambda x: 1 * (x == True)
+        # top_thres = lambda x: 1 * (x == True)
+        # bottom_thres = lambda x: 0 * (x == True)
         thres = arr.shape[0]
+        dist = np.sum(arr, axis=0)
+        print(dist)
+        print(test(dist == thres))
+        print(test(dist == 0))
+        # top = top_thres(arr == thres)
+        # bottom = bottom_thres(arr == 0)
 
     def consensus(self, iters):
         _consensus = []
@@ -109,17 +118,18 @@ nn = Nono(5, 5, keys)
 # nn.test((2, 2), 6)
 # nn.test((3, 2, 1), 10)
 
-print(nn.patterns((3, 2, 1), 10))
-print(nn.patterns((3, 2, 1), 10).shape)
-print(np.sum(nn.patterns((3, 2, 1), 10), axis=0))
-print(np.sum(nn.patterns((3, 2, 1), 10), axis=0) == 10)
-print(np.sum(nn.patterns((3, 2, 1), 10), axis=0) == 0)
+print(nn.patterns((3, 2, 3), 11))
+print(nn.np_consensus(nn.patterns((3, 2, 3), 11)))
+# print(nn.patterns((3, 2, 1), 10).shape)
+# print(np.sum(nn.patterns((3, 2, 1), 10), axis=0))
+# print(np.sum(nn.patterns((3, 2, 1), 10), axis=0) == 10)
+# print(np.sum(nn.patterns((3, 2, 1), 10), axis=0) == 0)
 
-print(nn.patterns((2, 2), 5))
-print(nn.patterns((2, 2), 5).shape)
-print(np.sum(nn.patterns((2, 2), 5), axis=0) )
-print(np.sum(nn.patterns((2, 2), 5), axis=0) == 1)
-print(np.sum(nn.patterns((2, 2), 5), axis=0) == 0)
+# print(nn.patterns((2, 2), 5))
+# print(nn.patterns((2, 2), 5).shape)
+# print(np.sum(nn.patterns((2, 2), 5), axis=0) )
+# print(np.sum(nn.patterns((2, 2), 5), axis=0) == 1)
+# print(np.sum(nn.patterns((2, 2), 5), axis=0) == 0)
 
 # for pattern in nn.patterns((3, 2, 1), 10):
 #     print(pattern)
