@@ -229,36 +229,31 @@ def permutations_origin(iterable, r=None):
         else:
             return
 
-def permutations_t(iterable):
-    pool = tuple(iterable)
-    n = len(pool) # length of iterable 
-    indices = list(range(n)) # indices of permutation 
-    cycles = list(range(n, 0, -1))
-    yield tuple(pool[i] for i in indices[:n])
-    while n:
-        for i in reversed(range(n)):
-            cycles[i] -= 1
-            if cycles[i] == 0:
-                indices[i:] = indices[i+1:] + indices[i:i+1]
-                cycles[i] = n - i
-            else:
-                j = cycles[i]
-                indices[i], indices[-j] = indices[-j], indices[i]
-                yield tuple(pool[i] for i in indices[:n])
-                break
-        else:
-            return
+from itertools import permutations, chain
 
-from itertools import permutations
+def has_next(iterable):
+    try:
+        first = next(iterable)
+    except StopIteration:
+        return None
+    return chain((first), iterable)
 
 def division(num, limit=float('inf'), root=True):
     for main_chunk in range(min(num, limit), 0, -1):
         rest_chunk = num - main_chunk
-        rest_chunk_divisions = tuple(division(rest_chunk, limit=main_chunk, root=False))
-        if rest_chunk_divisions:
-            for rest_chunk_division in rest_chunk_divisions:
-                yield [main_chunk, *rest_chunk_division]
-        else: 
+        # rest_chunk_divisions = tuple(division(rest_chunk, limit=main_chunk, root=False))
+        # if rest_chunk_divisions:
+        #     for rest_chunk_division in rest_chunk_divisions:
+        #         yield [main_chunk, *rest_chunk_division]
+        # else:
+        #     yield [main_chunk]
+        rest_chunk_divisions = division(rest_chunk, limit=main_chunk, root=False)
+
+        empty = True
+        for rest_chunk_division in rest_chunk_divisions:
+            if empty: empty = False
+            yield [main_chunk, *rest_chunk_division]
+        if empty: 
             yield [main_chunk]
 
 def division_with_filled_space(space, num):
@@ -267,50 +262,51 @@ def division_with_filled_space(space, num):
             d.append(0)
         yield d
 
-def test_division(space, n, m=None):
-    if m == None: 
-        m = n+1
-    for i in range(n, m):
-        print('='*20, 'division TEST for', i, '='*20)
-        for v in division_with_filled_space(space, i):
-            print(v)
-    print('='*20, 'END  TEST', '='*20)
-
 def tmp_permutations(space, n, m=None):
     if m == None: 
         m = n+1
     for i in range(n, m):
-        # print('='*20, 'permutations TEST for', i, '='*20)
         for v in division_with_filled_space(space, i):
             yield set(permutations(v))
-            # print(set(permutations(v)))
-            # print(tuple(permutations(v)))
-    # print('='*20, 'END  TEST', '='*20)
 
-# test_division(8, 4)
-
-def f(keys, L):
+def patterns(keys, L):
     S = len(keys)
     B = sum(keys)
     W = L - B
-    print('S:', S, 'B:', B, 'W:', W, 'W - (S - 1):', W - (S - 1))
     rst = tuple(tmp_permutations(S+1, W - (S - 1)))
-    print(rst)
     r = []
     if rst:
+        rst = rst[0]
         for rs in rst:
-            pass
+            tmp = []
+            for i, t in enumerate(rs):
+                for _ in range(t):
+                    tmp.append(False)
+                if i < len(keys):
+                    for _ in range(keys[i]):
+                        tmp.append(True)
+                    if i != len(keys) - 1:
+                        tmp.append(False)
+            r.append(tmp)
     else:
+        tmp = []
         for i, key in enumerate(keys):
             for k in range(key):
-                r.append(True)
+                tmp.append(True)
             if i != len(keys) - 1:
-                r.append(False)
+                tmp.append(False)
+        r.append(tmp)
     return r
 
-# print(f((3, 1), 5))
-f((1, 2), 5)
+from pprint import pprint
 
-# print(set(p([3, 0, 0])))
-# print(set(p([2, 1, 0])))
-# print(set(p([1, 1, 1])))
+pprint(patterns((3, 2, 1), 10))
+pprint(patterns((2, 2), 5))
+pprint(patterns((1, 2), 5))
+pprint(patterns((2, 1), 6))
+
+'''
+permutation 알고리즘의 최적화 : 단순히 permutation 의 set 을 구하는 식으로 패턴을 구하고 있는데 이 방식은 중복 패턴을 계산하기에 속도가 느림 
+자료구조 단순화 : True, False 를 비트 단위의 1, 0 으로 대체하고 이 자료를 계산하는 방식도 bit 연산자로 교체 
+확정 요소 : 확정된 요소가 있을 때 그것을 기반으로 패턴을 생성하면 계산 시간이 단축됨 
+'''
