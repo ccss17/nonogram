@@ -2,144 +2,111 @@
 from itertools import permutations, chain
 import numpy as np
 
-class Nono:
-    def __init__(self, row, col, keys):
-        self.coordinate = np.zeros((row, col))
-        # self.coordinate = np.arange(25).reshape(5, 5)
-        self.keys = keys 
+class Nonogram:
+    def __init__(self, row_keys, col_keys):
+        self.dt = np.dtype('i2')
+        self.row_keys = row_keys
+        self.col_keys = col_keys
+        self.row = len(self.row_keys)
+        self.col = len(self.col_keys)
+        self.coordinate = np.zeros((self.row, self.col), dtype=self.dt)
 
-    def has_next(self, iterable):
+    def _has_next(self, iterable):
         try:
             first = next(iterable)
         except StopIteration:
             return None
         return chain([first], iterable)
 
-    def divisions(self, num, limit=float('inf'), root=True):
-        for main_chunk in range(min(num, limit), 0, -1):
-            rest_chunk = num - main_chunk
-            rest_chunk_divisions = self.has_next(self.divisions(rest_chunk, limit=main_chunk, root=False))
-            if rest_chunk_divisions is None:
-                yield [main_chunk]
+    def _divisions(self, num, lim=float('inf')):
+        for chunk in range(min(num, lim), 0, -1):
+            rchunk = num - chunk
+            rchunk_divisions = self._has_next(
+                self._divisions(rchunk, lim=chunk))
+            if rchunk_divisions is None:
+                yield [chunk]
             else:
-                for rest_chunk_division in rest_chunk_divisions:
-                    yield [main_chunk, *rest_chunk_division]
+                for rest_chunk_division in rchunk_divisions:
+                    yield [chunk, *rest_chunk_division]
 
-    def division_with_filled_space(self, space, num):
-        for division in self.divisions(num):
+    def _division_with_filled_space(self, space, num):
+        for division in self._divisions(num):
             while len(division) < space:
                 division.append(0)
             yield division
 
-    def tmp_permutations(self, space, n, m=None):
-        if m == None: 
-            m = n+1
-        for i in range(n, m):
-            for v in self.division_with_filled_space(space, i):
-                for _patterns in set(permutations(v)):
-                    yield _patterns
+    def _combinations(self, space, num):
+        for v in self._division_with_filled_space(space, num):
+            for pt in set(permutations(v)):
+                yield pt
 
-    def patterns(self, keys, length):
-        S = len(keys)
-        B = sum(keys)
+    def patterns(self, key, length):
+        S = len(key)
+        B = sum(key)
         W = length - B
-        _white_block_patterns = self.has_next(self.tmp_permutations(S+1, W - (S - 1)))
-        # arr = np.array([[-1, -1, -1]], dtype=np.dtype('i2'))
-        arr = np.empty((length), dtype=np.dtype('i2'))
-        arr.fill(-1)
-        arr = arr.reshape(1, length)
-        if _white_block_patterns is None:
-            _pattern = np.array([], dtype=np.dtype('i2'))
-            for i, key in enumerate(keys):
-                _pattern = np.append(_pattern, [1 for _ in range(key)])
-                if i != len(keys) - 1:
-                    _pattern = np.append(_pattern, 0)
-            arr = np.array([_pattern], dtype=np.dtype('i2'))
+        pt_set = np.zeros((1, length), dtype=self.dt)
+        wb_pt = self._has_next(
+            self._combinations(S+1, W - (S - 1)))
+        if wb_pt is None:
+            pt = np.array([], dtype=self.dt)
+            for i, bsize in enumerate(key):
+                pt = np.append(pt, np.ones(bsize))
+                if i != len(key) - 1:
+                    pt = np.append(pt, -1)
+            pt_set = np.array([pt], dtype=self.dt)
         else:
-            flag = True
-            for _white_block in _white_block_patterns:
-                _pattern = np.array([], dtype=np.dtype('i2'))
-                for i, _white_block_size in enumerate(_white_block):
-                    _pattern = np.append(_pattern, np.array([0 for _ in range(_white_block_size)], dtype=np.dtype('i2')))
-                    if i < len(keys):
-                        _pattern = np.append(_pattern, np.array([1 for _ in range(keys[i])], dtype=np.dtype('i2')))
-                    if i < len(keys):
-                        if i != len(keys) - 1:
-                            _pattern = np.append(_pattern, 0)
-                if arr[0, 0] == -1:
-                    arr = np.array([_pattern], dtype=np.dtype('i2'))
+            for wb in wb_pt:
+                pt = np.array([], dtype=self.dt)
+                for i, wsize in enumerate(wb):
+                    pt = np.append(pt, np.full(wsize, -1, dtype=self.dt))
+                    if i < len(key):
+                        pt = np.append(pt, np.ones(key[i], dtype=self.dt))
+                        if i != len(key) - 1:
+                            pt = np.append(pt, -1)
+                if pt_set[0, 0] == 0:
+                    pt_set = np.array([pt], dtype=self.dt)
                 else:
-                    arr = np.append(arr, np.array([_pattern], dtype=np.dtype('i2')), axis=0)
-        return arr
+                    pt_set = np.append(pt_set, np.array(
+                        [pt], dtype=self.dt), axis=0)
+        return pt_set
 
-    def np_consensus(self, arr):
-        test = lambda x: 1 * (x == True)
-        # top_thres = lambda x: 1 * (x == True)
-        # bottom_thres = lambda x: 0 * (x == True)
-        thres = arr.shape[0]
+    def consensus(self, arr):
+        thresh = arr.shape[0]
+        check_B = lambda x: 1 * (x == thresh)
+        check_W = lambda x: -1 * (x == -thresh)
         dist = np.sum(arr, axis=0)
-        print(dist)
-        print(test(dist == thres))
-        print(test(dist == 0))
-        # top = top_thres(arr == thres)
-        # bottom = bottom_thres(arr == 0)
+        return check_B(dist) + check_W(dist)
 
-    def consensus(self, iters):
-        _consensus = []
-        _prev = []
-        for iter in iters:
-            if not _consensus: 
-                _consensus = iter
-                _prev = iter
-                continue
-            for i, (a, b) in enumerate(zip(_prev, iter)):
-                if _consensus is not None and a != b:
-                    _consensus[i] = None
-        return _consensus
+def test(row_keys, col_keys):
+    nn = Nonogram(row_keys, col_keys)
+    row = len(row_keys)
+    col = len(col_keys)
 
-    def test(self, keys, space):
-        for p in self.patterns(keys, space):
-            print("P:", p)
-        print("C:", self.consensus(self.patterns(keys, space)))
+    print(nn.coordinate, np.count_nonzero(nn.coordinate))
+    for i in range(row):
+        nn.coordinate[i] = np.bitwise_or(nn.coordinate[i], nn.consensus(nn.patterns(row_keys[i], row)))
+    print(nn.coordinate, np.count_nonzero(nn.coordinate))
+    for i in range(col):
+        nn.coordinate[:, i] = np.bitwise_or(nn.coordinate[:, i], nn.consensus(nn.patterns(col_keys[i], col)))
+    print(nn.coordinate, np.count_nonzero(nn.coordinate))
 
-keys = (
-    (
-        (5,), (1, 1, 1), (5,), (3,), (1, 1, 1)
-    ),
-    (
-        (3, 1), (1, 2), (5,), (1, 2), (3, 1)
-    )
+# row_keys = (
+#     (5,), (1, 1, 1), (5,), (3,), (1, 1, 1)
+# )
+# col_keys = (
+#     (3, 1), (1, 2), (5,), (1, 2), (3, 1)
+# )
+row_keys = (
+    (4,), (1,1), (1,1,1,1), (1,1,1,1), (2,2), (10,), (8,), (1,6,1), (2,1,1,2), (2,2,2)
 )
-
-nn = Nono(5, 5, keys)
-# nn.test((5,), 5)
-# nn.test((2, 1), 5)
-# nn.test((2, 2), 5)
-# nn.test((2, 2), 6)
-# nn.test((3, 2, 1), 10)
-
-print(nn.patterns((3, 2, 3), 11))
-print(nn.np_consensus(nn.patterns((3, 2, 3), 11)))
-# print(nn.patterns((3, 2, 1), 10).shape)
-# print(np.sum(nn.patterns((3, 2, 1), 10), axis=0))
-# print(np.sum(nn.patterns((3, 2, 1), 10), axis=0) == 10)
-# print(np.sum(nn.patterns((3, 2, 1), 10), axis=0) == 0)
-
-# print(nn.patterns((2, 2), 5))
-# print(nn.patterns((2, 2), 5).shape)
-# print(np.sum(nn.patterns((2, 2), 5), axis=0) )
-# print(np.sum(nn.patterns((2, 2), 5), axis=0) == 1)
-# print(np.sum(nn.patterns((2, 2), 5), axis=0) == 0)
-
-# for pattern in nn.patterns((3, 2, 1), 10):
-#     print(pattern)
-
-# print(coordinate)
-# print(coordinate[0])
-# print(coordinate[:, 0]) # 
+col_keys = (
+    (2,2), (5,2), (1,3,1), (1,1,4), (1,3,1), (1,3,1), (1,1,4), (1,3,1), (5,2), (2,2)
+)
+test(row_keys, col_keys)
 
 '''
 permutation 알고리즘의 최적화 : 단순히 permutation 의 set 을 구하는 식으로 패턴을 구하고 있는데 이 방식은 중복 패턴을 계산하기에 속도가 느림 
 자료구조 단순화 : True, False 를 비트 단위의 1, 0 으로 대체하고 이 자료를 계산하는 방식도 bit 연산자로 교체 
 확정 요소 : 확정된 요소가 있을 때 그것을 기반으로 패턴을 생성하면 계산 시간이 단축됨 
+멀티스레딩 / 멀티프로세싱 
 '''
