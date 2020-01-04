@@ -230,25 +230,6 @@ m 개의 공을 n 개의 자리에 배치하는 경우의 수
 #         else:
 #             return
 
-"""
-combination 에서 set(itertools.permutations) 을 사용해서 상당히 비효율적
-    가장 많은 요소를 위치불변요소로 상정하고 남은 자리를 나머지 요소들 채워나가는 식으로 알고리즘 최적화. 이때 채워나감과 동시에 또 다른 자리가 생겨나는 식으로 경우의 수가 늘어남. 
-permutation 알고리즘의 최적화
-    단순히 permutation 의 set 을 구하는 식으로 패턴을 구하고 있는데 이 방식은 중복 패턴을 계산하기에 속도가 느림 
-자료구조 단순화 : True, False 를 비트 단위의 1, 0 으로 대체하고 이 자료를 계산하는 방식도 bit 연산자로 교체 
-확정 요소 : 확정된 요소가 있을 때 그것을 기반으로 패턴을 생성하면 계산 시간이 단축됨 
-메모리 절약 : combinations 까지는 generator 라서 괜찮은데 patterns 부터 패턴을 저장하는 np.array 가 너무 커짐. 
-    _divisions(list)->
-    _division_with_filled_space(yield)->
-    combinations(yield)->
-    patterns(np.array)->
-    pool.map(list)
-Patterns 클래스에서도 순수하게 numpy.array 사용 
-    _divisions -> squeeze 함수 
-    _divisions_with_filled_space -> broadcast or 확장관련함수 
-    
-"""
-
 def test(row_keys, col_keys, processes=None):
     nn = Nonogram(row_keys, col_keys)
     nn.solve()
