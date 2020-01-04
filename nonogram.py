@@ -4,6 +4,25 @@ import numpy as np
 
 DTYPE = np.dtype('i2')
 
+class Draw:
+    black = '\u001b[30m'
+    red = '\u001b[31m'
+    green = '\u001b[32m'
+    yellow = '\u001b[33m'
+    blue = '\u001b[34m'
+    magenta = '\u001b[35m'
+    cyan = '\u001b[36m'
+    white = '\u001b[37m'
+    bright_black = '\u001b[30;1m'
+    bright_red = '\u001b[31;1m'
+    bright_green = '\u001b[32;1m'
+    bright_yellow = '\u001b[33;1m'
+    bright_blue = '\u001b[34;1m'
+    bright_magenta = '\u001b[35;1m'
+    bright_cyan = '\u001b[36;1m'
+    bright_white = '\u001b[37;1m'
+    reset = '\u001b[0m'
+    block = '█'
 
 class Pattern:
     @staticmethod
@@ -81,6 +100,7 @@ class Pattern:
 
 class Nonogram:
     def __init__(self, row_keys, col_keys, processes=None):
+        self.solved = False
         self.row_keys = row_keys
         self.col_keys = col_keys
         self.row = len(self.row_keys)
@@ -119,28 +139,61 @@ class Nonogram:
         dist = np.sum(pt, axis=0)
         return check_B(dist) + check_W(dist)
 
-    def solve_row(self):
+    def sync_consensus_row(self):
         for i in range(self.row):
             self.coordinate[i] = np.bitwise_or(
                 self.coordinate[i], self.consensus(self.row_pt[i]))
 
-    def solve_col(self):
+    def sync_consensus_col(self):
         for i in range(self.col):
             self.coordinate[:, i] = np.bitwise_or(
                 self.coordinate[:, i], self.consensus(self.col_pt[i]))
 
-    def discard(self):
-        """
-        nonzero
-        take
-        where
-        argwhere
-        를 사용하여 consensus 에 불일치하는 패턴 삭제 -> 패턴교집합확장 
-        """
-        print(self.coordinate[:, 0])
-        print(self.col_pt[0])
-        print(self.consensus(self.col_pt[0]))
+    def sync_patterns_row(self):
+        for i in range(self.row):
+            nonzero_indices = np.nonzero(self.coordinate[i])[0]
+            confirmation = np.take(self.coordinate[i], nonzero_indices)
+            inconsistency = [j for j, pt in enumerate(self.row_pt[i]) 
+                if not np.array_equal(confirmation, np.take(pt, nonzero_indices))]
+            self.row_pt[i] = np.delete(self.row_pt[i], inconsistency, axis=0)
 
+    def sync_patterns_col(self):
+        for i in range(self.col):
+            nonzero_indices = np.nonzero(self.coordinate[:, i])[0]
+            confirmation = np.take(self.coordinate[:, i], nonzero_indices)
+            inconsistency = [j for j, pt in enumerate(self.col_pt[i]) 
+                if not np.array_equal(confirmation, np.take(pt, nonzero_indices))]
+            self.col_pt[i] = np.delete(self.col_pt[i], inconsistency, axis=0)
+    
+    def solve(self):
+        self.sync_consensus_row()
+        self.sync_consensus_col()
+        nonzero = np.count_nonzero(self.coordinate)
+        while not self.verify():
+            self.sync_patterns_col()
+            self.sync_patterns_row()
+            self.sync_consensus_row()
+            self.sync_consensus_col()
+            tmp = np.count_nonzero(self.coordinate)
+            if nonzero == tmp:
+                print("I can't solve this anymore...")
+                self.status()
+                break 
+            else:
+                nonzero = tmp
+        else:
+            self.solved = True
+    
+    def draw(self):
+        if self.solved:
+            base = np.where(self.coordinate == 1, Draw.blue+Draw.block, Draw.yellow+Draw.block)
+            for b in base:
+                print(''.join(b))
+        else:
+            print('Nonogram is not solved yet...')
+
+    def verify(self):
+        return False if 0 in self.coordinate else True
 
 def parse_from_text(keystxt):
     def parse(keytxt):
@@ -148,3 +201,7 @@ def parse_from_text(keystxt):
                      for _ in keytxt.split(';'))
     keytxt = keystxt.split('\n')
     return parse(keytxt[0]), parse(keytxt[1])
+
+def parse_from_file(filename):
+    with open(filename) as f:
+        return parse_from_text(f.read())
