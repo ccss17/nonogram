@@ -2,6 +2,18 @@
 
 ## Usage
 
+```shell
+# try sample like this
+python main.py test/55
+python main.py test/1010
+python main.py test/1515
+python main.py test/2020
+python main.py test/2525
+python main.py test/3030
+```
+
+![preivew](preview.gif)
+
 1. 네모로직의 가로키 세로키를 입력 
 
     - 파일에 입력하는 방식 

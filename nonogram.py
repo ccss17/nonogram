@@ -1,28 +1,21 @@
 from itertools import permutations, chain
 from multiprocessing import Pool, cpu_count
 import numpy as np
+from colorama import Fore, Style, init
 
+init()
 DTYPE = np.dtype('i2')
 
 class Draw:
-    black = '\u001b[30m'
-    red = '\u001b[31m'
-    green = '\u001b[32m'
-    yellow = '\u001b[33m'
-    blue = '\u001b[34m'
-    magenta = '\u001b[35m'
-    cyan = '\u001b[36m'
-    white = '\u001b[37m'
-    bright_black = '\u001b[30;1m'
-    bright_red = '\u001b[31;1m'
-    bright_green = '\u001b[32;1m'
-    bright_yellow = '\u001b[33;1m'
-    bright_blue = '\u001b[34;1m'
-    bright_magenta = '\u001b[35;1m'
-    bright_cyan = '\u001b[36;1m'
-    bright_white = '\u001b[37;1m'
-    reset = '\u001b[0m'
     block = '█'
+
+    @classmethod
+    def yellow_block(cls):
+        return Fore.YELLOW + cls.block
+
+    @classmethod
+    def blue_block(cls):
+        return Fore.BLUE + cls.block
 
 class Pattern:
     @staticmethod
@@ -186,7 +179,7 @@ class Nonogram:
     
     def draw(self):
         if self.solved:
-            base = np.where(self.coordinate == 1, Draw.blue+Draw.block, Draw.yellow+Draw.block)
+            base = np.where(self.coordinate == 1, Draw.blue_block(), Draw.yellow_block())
             for b in base:
                 print(''.join(b))
         else:
