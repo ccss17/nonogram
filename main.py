@@ -1,4 +1,6 @@
 from nonogram import *
+from time import time
+import sys
 
 '''
 ?????
@@ -230,15 +232,18 @@ m 개의 공을 n 개의 자리에 배치하는 경우의 수
 #         else:
 #             return
 
-def test(row_keys, col_keys, processes=None):
+def test(argv):
+    start_time = time()
+    if len(sys.argv) == 2:
+        row_keys, col_keys = parse_from_file(sys.argv[1])
+    else:
+        row_keys, col_keys = parse_from_file('test/1010')
     nn = Nonogram(row_keys, col_keys)
     nn.solve()
     nn.draw()
+    print(Style.RESET_ALL+f'Time taken:{round(time()-start_time, 3)} secs')
 
 if __name__ == '__main__':
-    from time import time
-    import sys
-    row_keys, col_keys = parse_from_file(sys.argv[1])
-    start_time = time()
-    test(row_keys, col_keys)
-    print(Style.RESET_ALL+f'Time taken:{round(time()-start_time, 1)} secs')
+    # test(sys.argv)
+    print(list(Pattern.divisions(6)))
+    print(list(Pattern._division_with_filled_space(6, 6)))

@@ -4,18 +4,13 @@ import numpy as np
 from colorama import Fore, Style, init
 
 init()
-DTYPE = np.dtype('i2')
+DTYPE = np.dtype('i1')
 
 class Draw:
     block = '█'
-
-    @classmethod
-    def yellow_block(cls):
-        return Fore.YELLOW + cls.block
-
-    @classmethod
-    def blue_block(cls):
-        return Fore.BLUE + cls.block
+    yellow_block = Fore.YELLOW + block
+    blue_block = Fore.BLUE + block
+    white_block = Fore.WHITE + block
 
 class Pattern:
     @staticmethod
@@ -27,27 +22,23 @@ class Pattern:
         return chain([first], iterable)
 
     @classmethod
-    def _divisions(cls, num, space=float('inf'), lim=float('inf'), depth=0):
-        result = []
+    def divisions(cls, num, space=float('inf'), lim=float('inf'), depth=0):
         for chunk in range(min(num, lim), 0, -1):
             rchunk = num - chunk
             if rchunk == 0:
-                result.append([chunk])
+                yield [chunk]
                 continue
             if depth + 2 > space:
                 continue
-            rchunk_divisions = cls._divisions(
+            rchunk_divisions = cls.divisions(
                 rchunk, space, lim=chunk, depth=depth+1)
             for rest_chunk_division in rchunk_divisions:
-                result.append([chunk, *rest_chunk_division])
-        return result
+                yield [chunk, *rest_chunk_division]
 
     @classmethod
     def _division_with_filled_space(cls, space, num):
-        for division in cls._divisions(num, space):
-            while len(division) < space:
-                division.append(0)
-            yield division
+        for division in cls.divisions(num, space):
+            yield np.pad(division, (0, space - len(division)))
 
     @classmethod
     def combinations(cls, space, num):
@@ -132,25 +123,21 @@ class Nonogram:
         dist = np.sum(pt, axis=0)
         return check_B(dist) + check_W(dist)
 
-    def sync_consensus_row(self):
+    def sync_consensus(self):
         for i in range(self.row):
             self.coordinate[i] = np.bitwise_or(
                 self.coordinate[i], self.consensus(self.row_pt[i]))
-
-    def sync_consensus_col(self):
         for i in range(self.col):
             self.coordinate[:, i] = np.bitwise_or(
                 self.coordinate[:, i], self.consensus(self.col_pt[i]))
 
-    def sync_patterns_row(self):
+    def sync_patterns(self):
         for i in range(self.row):
             nonzero_indices = np.nonzero(self.coordinate[i])[0]
             confirmation = np.take(self.coordinate[i], nonzero_indices)
             inconsistency = [j for j, pt in enumerate(self.row_pt[i]) 
                 if not np.array_equal(confirmation, np.take(pt, nonzero_indices))]
             self.row_pt[i] = np.delete(self.row_pt[i], inconsistency, axis=0)
-
-    def sync_patterns_col(self):
         for i in range(self.col):
             nonzero_indices = np.nonzero(self.coordinate[:, i])[0]
             confirmation = np.take(self.coordinate[:, i], nonzero_indices)
@@ -159,14 +146,11 @@ class Nonogram:
             self.col_pt[i] = np.delete(self.col_pt[i], inconsistency, axis=0)
     
     def solve(self):
-        self.sync_consensus_row()
-        self.sync_consensus_col()
+        self.sync_consensus()
         nonzero = np.count_nonzero(self.coordinate)
         while not self.verify():
-            self.sync_patterns_col()
-            self.sync_patterns_row()
-            self.sync_consensus_row()
-            self.sync_consensus_col()
+            self.sync_patterns()
+            self.sync_consensus()
             tmp = np.count_nonzero(self.coordinate)
             if nonzero == tmp:
                 print("I can't solve this anymore...")
@@ -179,7 +163,7 @@ class Nonogram:
     
     def draw(self):
         if self.solved:
-            base = np.where(self.coordinate == 1, Draw.blue_block(), Draw.yellow_block())
+            base = np.where(self.coordinate == 1, Draw.blue_block, Draw.white_block)
             for b in base:
                 print(''.join(b))
         else:
