@@ -26,6 +26,8 @@ python main.py test/3030
 
 ## TODO
 
+- Pool.map -> Pool.imap or async... (메모리 효율 + 생성자에서 stuck)
+
 - combination 에서 set(itertools.permutations) 을 사용해서 상당히 비효율적
 
   - 가장 많은 요소를 위치불변요소로 상정하고 남은 자리를 나머지 요소들 채워나가는 식으로 알고리즘 최적화. 이때 채워나감과 동시에 또 다른 자리가 생겨나는 식으로 경우의 수가 늘어남. 

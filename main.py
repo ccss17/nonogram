@@ -237,13 +237,11 @@ def test(argv):
     if len(sys.argv) == 2:
         row_keys, col_keys = parse_from_file(sys.argv[1])
     else:
-        row_keys, col_keys = parse_from_file('test/1010')
-    nn = Nonogram(row_keys, col_keys)
+        row_keys, col_keys = parse_from_file('test/2525')
+    nn = NonogramHacker(row_keys, col_keys)
     nn.solve()
     nn.draw()
     print(Style.RESET_ALL+f'Time taken:{round(time()-start_time, 3)} secs')
 
 if __name__ == '__main__':
-    # test(sys.argv)
-    print(list(Pattern.divisions(6)))
-    print(list(Pattern._division_with_filled_space(6, 6)))
+    test(sys.argv)

@@ -4,13 +4,16 @@ import numpy as np
 from colorama import Fore, Style, init
 
 init()
-DTYPE = np.dtype('i1')
+INT8 = np.int8
+UBYTE = np.uint8
+
 
 class Draw:
     block = '█'
     yellow_block = Fore.YELLOW + block
     blue_block = Fore.BLUE + block
     white_block = Fore.WHITE + block
+
 
 class Pattern:
     @staticmethod
@@ -26,14 +29,14 @@ class Pattern:
         for chunk in range(min(num, lim), 0, -1):
             rchunk = num - chunk
             if rchunk == 0:
-                yield [chunk]
+                yield np.asarray([chunk], dtype=UBYTE)
                 continue
             if depth + 2 > space:
                 continue
             rchunk_divisions = cls.divisions(
                 rchunk, space, lim=chunk, depth=depth+1)
             for rest_chunk_division in rchunk_divisions:
-                yield [chunk, *rest_chunk_division]
+                yield np.asarray([chunk, *rest_chunk_division], dtype=UBYTE)
 
     @classmethod
     def _division_with_filled_space(cls, space, num):
@@ -55,31 +58,33 @@ class Pattern:
         S = len(key)
         B = sum(key)
         W = length - B
-        pt_set = np.zeros((1, length), dtype=DTYPE)
-        wb_pt = cls._has_next(
+        white_block_patterns = cls._has_next(
             cls.combinations(S+1, W - (S - 1)))
-        if wb_pt is None:
-            pt = np.array([], dtype=DTYPE)
+        if white_block_patterns is None:
+            pattern = np.array([], dtype=INT8)
             for i, bsize in enumerate(key):
-                pt = np.append(pt, np.ones(bsize))
+                pattern = np.append(pattern, np.ones(bsize))
                 if i != len(key) - 1:
-                    pt = np.append(pt, -1)
-            pt_set = np.array([pt], dtype=DTYPE)
+                    pattern = np.append(pattern, -1)
+            return np.array([pattern], dtype=INT8)
         else:
-            for wb in wb_pt:
-                pt = np.array([], dtype=DTYPE)
+            pattern_set = np.zeros((1, length), dtype=INT8)
+            for wb in white_block_patterns:
+                pattern = np.array([], dtype=INT8)
                 for i, wsize in enumerate(wb):
-                    pt = np.append(pt, np.full(wsize, -1, dtype=DTYPE))
+                    pattern = np.append(
+                        pattern, np.full(wsize, -1, dtype=INT8))
                     if i < len(key):
-                        pt = np.append(pt, np.ones(key[i], dtype=DTYPE))
+                        pattern = np.append(
+                            pattern, np.ones(key[i], dtype=INT8))
                         if i != len(key) - 1:
-                            pt = np.append(pt, -1)
-                if pt_set[0, 0] == 0:
-                    pt_set = np.array([pt], dtype=DTYPE)
+                            pattern = np.append(pattern, -1)
+                if pattern_set[0, 0] == 0:
+                    pattern_set = np.array([pattern], dtype=INT8)
                 else:
-                    pt_set = np.append(pt_set, np.array(
-                        [pt], dtype=DTYPE), axis=0)
-        return pt_set
+                    pattern_set = np.append(pattern_set, np.array(
+                        [pattern], dtype=INT8), axis=0)
+            return pattern_set
 
 
 class Nonogram:
@@ -89,26 +94,41 @@ class Nonogram:
         self.col_keys = col_keys
         self.row = len(self.row_keys)
         self.col = len(self.col_keys)
-        self.coordinate = np.zeros((self.row, self.col), dtype=DTYPE)
-        pt_arg = [(row_keys[i], self.row) for i in range(self.row)] + \
-            [(col_keys[i], self.col) for i in range(self.col)]
+        self.coordinate = np.zeros((self.row, self.col), dtype=INT8)
+        def processes_policy():
+            longest = max(self.row, self.col)
+            if longest <= 10:
+                return 1
+            elif longest <= 15:
+                return 3
+            elif longest <= 25:
+                return 5
+            else:
+                return cpu_count()
 
-        proc_ct = self._processes_policy() if processes is None else processes
+        proc_ct = processes_policy() if processes is None else processes
         with Pool(processes=min(cpu_count(), proc_ct)) as pool:
+            pt_arg = [(row_keys[i], self.row) for i in range(self.row)] + \
+                [(col_keys[i], self.col) for i in range(self.col)]
             all_pt = pool.map(Pattern.patterns_from_map, pt_arg)
             self.row_pt = all_pt[:self.row]
             self.col_pt = all_pt[self.row:]
 
-    def _processes_policy(self):
-        longest = max(self.row, self.col)
-        if longest <= 10:
-            return 1
-        elif longest <= 15:
-            return 3
-        elif longest <= 25:
-            return 5
-        else:
-            return cpu_count()
+    def consensus(self, pattern):
+        thresh = pattern.shape[0]
+        def check_B(x): return 1 * (x == thresh)
+        def check_W(x): return -1 * (x == -thresh)
+        dist = np.sum(pattern, axis=0)
+        return check_B(dist) + check_W(dist)
+
+    def consistent_patterns(self, pattern_set, line):
+        nonzero_indices = np.nonzero(line)[0]
+        confirmation = line[nonzero_indices]
+        consistency = []
+        for i, pattern in enumerate(pattern_set):
+            if np.array_equal(confirmation, pattern[nonzero_indices]):
+                consistency.append(i)
+        return pattern_set[consistency]
 
     def status(self):
         percentage = round((np.count_nonzero(self.coordinate) /
@@ -116,12 +136,18 @@ class Nonogram:
         print(f'[{self.row}X{self.col}] coordinate({percentage}%):')
         print(self.coordinate)
 
-    def consensus(self, pt):
-        thresh = pt.shape[0]
-        def check_B(x): return 1 * (x == thresh)
-        def check_W(x): return -1 * (x == -thresh)
-        dist = np.sum(pt, axis=0)
-        return check_B(dist) + check_W(dist)
+    def draw(self):
+        if self.solved:
+            base = np.where(self.coordinate == 1,
+                            Draw.blue_block, Draw.white_block)
+            for b in base:
+                print(''.join(b))
+        else:
+            print('Nonogram is not solved yet...')
+
+class NonogramHacker(Nonogram):
+    def verify(self):
+        return False if 0 in self.coordinate else True
 
     def sync_consensus(self):
         for i in range(self.row):
@@ -133,18 +159,14 @@ class Nonogram:
 
     def sync_patterns(self):
         for i in range(self.row):
-            nonzero_indices = np.nonzero(self.coordinate[i])[0]
-            confirmation = np.take(self.coordinate[i], nonzero_indices)
-            inconsistency = [j for j, pt in enumerate(self.row_pt[i]) 
-                if not np.array_equal(confirmation, np.take(pt, nonzero_indices))]
-            self.row_pt[i] = np.delete(self.row_pt[i], inconsistency, axis=0)
+            if not np.count_nonzero(self.coordinate[i]) == self.row:
+                self.row_pt[i] = self.consistent_patterns(
+                    self.row_pt[i], self.coordinate[i])
         for i in range(self.col):
-            nonzero_indices = np.nonzero(self.coordinate[:, i])[0]
-            confirmation = np.take(self.coordinate[:, i], nonzero_indices)
-            inconsistency = [j for j, pt in enumerate(self.col_pt[i]) 
-                if not np.array_equal(confirmation, np.take(pt, nonzero_indices))]
-            self.col_pt[i] = np.delete(self.col_pt[i], inconsistency, axis=0)
-    
+            if not np.count_nonzero(self.coordinate[:, i]) == self.col:
+                self.col_pt[i] = self.consistent_patterns(
+                    self.col_pt[i], self.coordinate[:, i])
+
     def solve(self):
         self.sync_consensus()
         nonzero = np.count_nonzero(self.coordinate)
@@ -155,22 +177,12 @@ class Nonogram:
             if nonzero == tmp:
                 print("I can't solve this anymore...")
                 self.status()
-                break 
+                break
             else:
                 nonzero = tmp
         else:
             self.solved = True
-    
-    def draw(self):
-        if self.solved:
-            base = np.where(self.coordinate == 1, Draw.blue_block, Draw.white_block)
-            for b in base:
-                print(''.join(b))
-        else:
-            print('Nonogram is not solved yet...')
 
-    def verify(self):
-        return False if 0 in self.coordinate else True
 
 def parse_from_text(keystxt):
     def parse(keytxt):
@@ -178,6 +190,7 @@ def parse_from_text(keystxt):
                      for _ in keytxt.split(';'))
     keytxt = keystxt.split('\n')
     return parse(keytxt[0]), parse(keytxt[1])
+
 
 def parse_from_file(filename):
     with open(filename) as f:
