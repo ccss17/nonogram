@@ -1,6 +1,7 @@
-from itertools import permutations
+import itertools 
 import numpy as np
 from config import *
+from time import time
 
 
 def full(num, count):
@@ -35,15 +36,30 @@ class Pattern:
                 yield [chunk, *rest_chunk_division]
 
     @classmethod
-    def _division_with_filled_space(cls, space, num):
+    def division_with_filled_space(cls, space, num):
         for division in cls.divisions(num, space):
             division += zeros(space - len(division))
             yield division
+    
+    @classmethod
+    def permutations(cls, iterable, l=0, r=None): 
+        r = len(iterable)-1 if r is None else r
+        for i in range(l,r+1): 
+            if iterable[l] == iterable[i] and l != i:
+                continue
+            iterable[l], iterable[i] = iterable[i], iterable[l] 
+            if l+1 == r:
+                yield tuple(iterable)
+            else:
+                for case in cls.permutations(iterable, l+1, r):
+                    yield case
+            iterable[l], iterable[i] = iterable[i], iterable[l] # backtrack 
 
     @classmethod
     def combinations(cls, space, num):
-        for v in cls._division_with_filled_space(space, num):
-            for pattern in set(permutations(v)):
+        for v in cls.division_with_filled_space(space, num):
+            # for pattern in set(itertools.permutations(v)):
+            for pattern in set(cls.permutations(v)):
                 yield pattern
 
     @classmethod
@@ -65,6 +81,8 @@ class Pattern:
                     pattern.append(-1)
             return np.array([pattern], dtype=DTYPE)
 
+        # start_time = time()
+
         white_block_patterns = cls.combinations(S + 1, VARIABLE_FACTOR)
         pattern_set = np.zeros((1, length), dtype=DTYPE)
         for white_block_pattern in white_block_patterns:
@@ -80,4 +98,15 @@ class Pattern:
             else:
                 pattern_set = np.append(pattern_set, np.array(
                     [pattern], dtype=DTYPE), axis=0)
+
+        # elap_time = round(time()-start_time, 5)
+        # if elap_time > 0.9:
+        #     print('\t', key, length)
+        #     print(f'\tPhase 1 Time Taken:{elap_time} secs')
+        # elif elap_time < 0.01:
+        #     pass
+        # else:
+        #     print(f'{elap_time} secs', end=' ')
+        #     print(key, length)
+
         return pattern_set

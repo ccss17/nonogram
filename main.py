@@ -1,6 +1,9 @@
 from nonogram import *
+from patterns import *
 from time import time
+from pprint import pprint
 import sys
+import itertools as it
 
 '''
 ?????
@@ -209,44 +212,67 @@ m 개의 공을 n 개의 자리에 배치하는 경우의 수
     n(n + 3 - 10^(1/2))(n + 3 + 10^(1/2))/6
 '''
 
-# def permutations_origin(iterable, r=None):
-#     pool = tuple(iterable)
-#     n = len(pool) # length of iterable 
-#     r = n if r is None else r # length of permutation 
-#     if r > n:
-#         return
-#     indices = list(range(n)) # indices of permutation 
-#     cycles = list(range(n, n-r, -1))
-#     yield tuple(pool[i] for i in indices[:r])
-#     while n:
-#         for i in reversed(range(r)):
-#             cycles[i] -= 1
-#             if cycles[i] == 0:
-#                 indices[i:] = indices[i+1:] + indices[i:i+1]
-#                 cycles[i] = n - i
-#             else:
-#                 j = cycles[i]
-#                 indices[i], indices[-j] = indices[-j], indices[i]
-#                 yield tuple(pool[i] for i in indices[:r])
-#                 break
-#         else:
-#             return
+def permutations_origin(iterable, r=None):
+    pool = tuple(iterable)
+    n = len(pool) # length of iterable 
+    r = n if r is None else r # length of permutation 
+    if r > n:
+        return
+    indices = list(range(n)) # indices of permutation 
+    cycles = list(range(n, n-r, -1))
+    print('indices', indices)
+    yield tuple(pool[i] for i in indices[:r])
+    while n:
+        for i in reversed(range(r)):
+            cycles[i] -= 1
+            if cycles[i] == 0:
+                indices[i:] = indices[i+1:] + indices[i:i+1]
+                print('[A]indices', indices)
+                cycles[i] = n - i
+            else:
+                j = cycles[i]
+                indices[i], indices[-j] = indices[-j], indices[i]
+                print('[CHECKOUT]indices', indices)
+                yield tuple(pool[i] for i in indices[:r])
+                break
+        else:
+            return
+def test(row_keys, col_keys):
+    nn = NonogramHacker(row_keys, col_keys, processes=1)
+    start_time = time()
+    nn.init_patterns()
+    print(Style.RESET_ALL+f'Init Pattern Time Taken:{round(time()-start_time, 5)} secs')
+    start_time = time()
+    nn.solve()
+    print(Style.RESET_ALL+f'Sovling Time Taken:{round(time()-start_time, 5)} secs')
+    nn.draw()
 
-def test(argv):
+def main(argv):
     if len(sys.argv) == 2:
         row_keys, col_keys = parse_from_file(sys.argv[1])
     else:
+        # row_keys, col_keys = parse_from_file('test/55')
         # row_keys, col_keys = parse_from_file('test/1010')
+        # row_keys, col_keys = parse_from_file('test/1515')
         # row_keys, col_keys = parse_from_file('test/2020')
+        # row_keys, col_keys = parse_from_file('test/2525')
         row_keys, col_keys = parse_from_file('test/3030')
-    nn = NonogramHacker(row_keys, col_keys)
-    start_time = time()
-    nn.init_patterns()
-    print(Style.RESET_ALL+f'Init Pattern Time Taken:{round(time()-start_time, 3)} secs')
-    start_time = time()
-    nn.solve()
-    print(Style.RESET_ALL+f'Sovling Time Taken:{round(time()-start_time, 3)} secs')
-    nn.draw()
+
+    test(row_keys, col_keys)
+
+def test_performance():
+    test_files = [
+        'test/55',
+        'test/1010',
+        'test/1515',
+        'test/2020',
+        'test/2525',
+        'test/3030'
+    ]
+    for test_file in test_files:
+        row_keys, col_keys = parse_from_file(test_file)
+        test(row_keys, col_keys)
 
 if __name__ == '__main__':
-    test(sys.argv)
+    main(sys.argv)
+    # test_performance()

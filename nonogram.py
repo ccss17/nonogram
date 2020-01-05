@@ -116,14 +116,14 @@ class NonogramHacker(Nonogram):
         else:
             self.solved = True
 
-
-def parse_from_text(keystxt):
-    def parse(keytxt):
+def parse_from_text(keystext):
+    def parse(keytext):
         return tuple(tuple(map(int, _.split(' ')))
-                     for _ in keytxt.split(';'))
-    keytxt = keystxt.split('\n')
-    return parse(keytxt[0]), parse(keytxt[1])
-
+                     for _ in keytext.split(';'))
+    keytext = keystext.split('\n\n')
+    rowkeytext =';'.join(keytext[0].split('\n'))
+    colkeytext =';'.join(keytext[1].split('\n'))
+    return parse(rowkeytext), parse(colkeytext)
 
 def parse_from_file(filename):
     with open(filename) as f:
