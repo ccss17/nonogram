@@ -233,15 +233,20 @@ m 개의 공을 n 개의 자리에 배치하는 경우의 수
 #             return
 
 def test(argv):
-    start_time = time()
     if len(sys.argv) == 2:
         row_keys, col_keys = parse_from_file(sys.argv[1])
     else:
-        row_keys, col_keys = parse_from_file('test/2525')
+        # row_keys, col_keys = parse_from_file('test/1010')
+        # row_keys, col_keys = parse_from_file('test/2020')
+        row_keys, col_keys = parse_from_file('test/3030')
     nn = NonogramHacker(row_keys, col_keys)
+    start_time = time()
+    nn.init_patterns()
+    print(Style.RESET_ALL+f'Init Pattern Time Taken:{round(time()-start_time, 3)} secs')
+    start_time = time()
     nn.solve()
+    print(Style.RESET_ALL+f'Sovling Time Taken:{round(time()-start_time, 3)} secs')
     nn.draw()
-    print(Style.RESET_ALL+f'Time taken:{round(time()-start_time, 3)} secs')
 
 if __name__ == '__main__':
     test(sys.argv)

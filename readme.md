@@ -50,6 +50,18 @@ python main.py test/3030
 
   - pool.map(list)
 
+- C 언어 사용 : combination 까지는 privimitve 타입을 ㅏㅅ용하기 때문에 C 언어로 대체하여 속도 올릴 수 있지 않을까 
+
+  - _divisions(primitive)->
+
+  - _division_with_filled_space(primitive)->
+
+  - combinations(primitive)->
+
+  - patterns(numpy)->
+
+  - pool.map(numpy)
+
 - Patterns 클래스에서도 순수하게 numpy.array 사용 
 
   - _divisions -> squeeze 함수 
