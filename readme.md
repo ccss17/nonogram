@@ -18,6 +18,8 @@ python main.py test/3030
 
 ![preivew](preview.gif)
 
+![preivew](preview2.gif)
+
 1. 네모로직의 가로키 세로키를 입력 
 
     - 파일에 입력하는 방식 
