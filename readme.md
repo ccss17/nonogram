@@ -26,6 +26,12 @@ python main.py test/3030
 
 ## TODO
 
+- ㅇㅇ 
+
+- 패턴을 만듦과 동시에 풀기 시작하기
+
+  - 현재는 패턴생성 -> 풀기 이렇게 이산적으로 하고 있는데 다이나믹하게 패턴을 만들면서 풀기 
+
 - Pool.map -> Pool.imap or async... (메모리 효율 + 생성자에서 stuck)
 
 - combination 에서 set(itertools.permutations) 을 사용해서 상당히 비효율적
