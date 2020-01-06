@@ -1,5 +1,6 @@
 from nonogram import *
 from patterns import *
+from multiprocessing import *
 from time import time
 from pprint import pprint
 import sys
@@ -212,40 +213,16 @@ m 개의 공을 n 개의 자리에 배치하는 경우의 수
     n(n + 3 - 10^(1/2))(n + 3 + 10^(1/2))/6
 '''
 
-def permutations_origin(iterable, r=None):
-    pool = tuple(iterable)
-    n = len(pool) # length of iterable 
-    r = n if r is None else r # length of permutation 
-    if r > n:
-        return
-    indices = list(range(n)) # indices of permutation 
-    cycles = list(range(n, n-r, -1))
-    print('indices', indices)
-    yield tuple(pool[i] for i in indices[:r])
-    while n:
-        for i in reversed(range(r)):
-            cycles[i] -= 1
-            if cycles[i] == 0:
-                indices[i:] = indices[i+1:] + indices[i:i+1]
-                print('[A]indices', indices)
-                cycles[i] = n - i
-            else:
-                j = cycles[i]
-                indices[i], indices[-j] = indices[-j], indices[i]
-                print('[CHECKOUT]indices', indices)
-                yield tuple(pool[i] for i in indices[:r])
-                break
-        else:
-            return
-def test(row_keys, col_keys):
-    nn = NonogramHacker(row_keys, col_keys, processes=1)
+def test(row_keys, col_keys, processes=None):
+    nn = NonogramHacker(row_keys, col_keys, processes)
     start_time = time()
     nn.init_patterns()
-    print(Style.RESET_ALL+f'Init Pattern Time Taken:{round(time()-start_time, 5)} secs')
+    init_patterns_time = time()-start_time
     start_time = time()
     nn.solve()
-    print(Style.RESET_ALL+f'Sovling Time Taken:{round(time()-start_time, 5)} secs')
-    nn.draw()
+    solving_time = time()-start_time
+    # nn.draw()
+    return init_patterns_time, solving_time
 
 def main(argv):
     if len(sys.argv) == 2:
@@ -271,8 +248,27 @@ def test_performance():
     ]
     for test_file in test_files:
         row_keys, col_keys = parse_from_file(test_file)
-        test(row_keys, col_keys)
+        init_patterns_time, solving_time = test(row_keys, col_keys)
+        floating_point = 4
+        print(f'Time Taken(Init Pattern/Solving):{round(init_patterns_time, floating_point)}/{round(solving_time, 4)} secs')
+
+def test_processes():
+    # test_file = 'test/55'
+    # test_file = 'test/1010'
+    # test_file = 'test/1515'
+    # test_file = 'test/2020'
+    # test_file = 'test/2525'
+    test_file = 'test/3030'
+    row_keys, col_keys = parse_from_file(test_file)
+    time_lst = []
+    for proc_count in range(cpu_count(), 0, -1):
+        print('Proc', proc_count)
+        time_lst.append((proc_count, sum(test(row_keys, col_keys, proc_count))))
+    print(time_lst)
+    print('Best:', min(time_lst, key=lambda x:x[1]))
+    print('Worst:', max(time_lst, key=lambda x:x[1]))
 
 if __name__ == '__main__':
     # main(sys.argv)
     test_performance()
+    # test_processes()
