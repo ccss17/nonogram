@@ -274,5 +274,5 @@ def test_performance():
         test(row_keys, col_keys)
 
 if __name__ == '__main__':
-    main(sys.argv)
-    # test_performance()
+    # main(sys.argv)
+    test_performance()
