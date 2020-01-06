@@ -218,11 +218,9 @@ def test(row_keys, col_keys, processes=None):
     start_time = time()
     nn.init_patterns()
     init_patterns_time = time()-start_time
-    print(Style.RESET_ALL+f'Init Pattern Time Taken:{round(init_patterns_time, 5)} secs')
     start_time = time()
     nn.solve()
     solving_time = time()-start_time
-    print(Style.RESET_ALL+f'Sovling Time Taken:{round(solving_time, 5)} secs')
     # nn.draw()
     return init_patterns_time, solving_time
 
@@ -250,7 +248,9 @@ def test_performance():
     ]
     for test_file in test_files:
         row_keys, col_keys = parse_from_file(test_file)
-        test(row_keys, col_keys)
+        init_patterns_time, solving_time = test(row_keys, col_keys)
+        floating_point = 4
+        print(f'Time Taken(Init Pattern/Solving):{round(init_patterns_time, floating_point)}/{round(solving_time, 4)} secs')
 
 def test_processes():
     # test_file = 'test/55'
