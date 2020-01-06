@@ -221,21 +221,26 @@ def test(row_keys, col_keys, processes=None):
     start_time = time()
     nn.solve()
     solving_time = time()-start_time
-    # nn.draw()
+    nn.draw()
     return init_patterns_time, solving_time
 
 def main(argv):
     if len(sys.argv) == 2:
         row_keys, col_keys = parse_from_file(sys.argv[1])
     else:
+        print('pass argument(filename)')
+        return
+
         # row_keys, col_keys = parse_from_file('test/55')
         # row_keys, col_keys = parse_from_file('test/1010')
         # row_keys, col_keys = parse_from_file('test/1515')
         # row_keys, col_keys = parse_from_file('test/2020')
         # row_keys, col_keys = parse_from_file('test/2525')
-        row_keys, col_keys = parse_from_file('test/3030')
+        # row_keys, col_keys = parse_from_file('test/3030')
 
-    test(row_keys, col_keys)
+    init_patterns_time, solving_time = test(row_keys, col_keys)
+    floating_point = 4
+    print(f'Time Taken(Init Pattern/Solving):{round(init_patterns_time, floating_point)}/{round(solving_time, 4)} secs')
 
 def test_performance():
     test_files = [
@@ -269,6 +274,6 @@ def test_processes():
     print('Worst:', max(time_lst, key=lambda x:x[1]))
 
 if __name__ == '__main__':
-    # main(sys.argv)
-    test_performance()
+    main(sys.argv)
+    # test_performance()
     # test_processes()

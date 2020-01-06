@@ -75,8 +75,7 @@ class Nonogram:
             base = np.where(self.coordinate == 1,
                             Draw.blue_block, Draw.white_block)
             for b in base:
-                print(''.join(b))
-            print(Style.RESET_ALL)
+                print(''.join(b) + Style.RESET_ALL)
         else:
             print('Nonogram is not solved yet...')
 
