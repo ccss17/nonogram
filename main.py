@@ -221,7 +221,7 @@ def test(row_keys, col_keys, processes=None):
     start_time = time()
     nn.solve()
     solving_time = time()-start_time
-    # nn.draw()
+    nn.draw()
     return init_patterns_time, solving_time
 
 def main(argv):
@@ -272,3 +272,8 @@ if __name__ == '__main__':
     # main(sys.argv)
     test_performance()
     # test_processes()
+
+    # ll = 10**5
+    # for i in range(ll):
+    #     sys.stderr.write('\rdone {0:%}'.format((i+1)/ll))
+    # sys.stderr.write('\n')

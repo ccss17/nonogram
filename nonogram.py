@@ -3,6 +3,7 @@ import numpy as np
 from colorama import Fore, Style, init
 from patterns import *
 from config import *
+import sys
 
 init()
 
@@ -24,29 +25,36 @@ class Nonogram:
         self.coordinate = np.zeros((self.row, self.col), dtype=DTYPE)
         self.row_patterns = []
         self.col_patterns = []
-        self.processes = processes
+        def processes_policy(proc_count=None):
+            longest = max(self.row, self.col)
+            if proc_count is None:
+                if longest <= 5:
+                    proc_count = 1
+                if longest <= 10:
+                    proc_count = 2
+                elif longest <= 15:
+                    proc_count = 3
+                elif longest <= 25:
+                    proc_count = 5
+                else:
+                    proc_count = cpu_count()
+            return min(proc_count, cpu_count() - 2)
+        self.processes = processes_policy(processes)
 
     def init_patterns(self):
-        def processes_policy():
-            longest = max(self.row, self.col)
-            if longest <= 5:
-                return 1
-            if longest <= 10:
-                return 2
-            elif longest <= 15:
-                return 3
-            elif longest <= 25:
-                return 5
-            else:
-                return cpu_count()
-
-        proc_count = processes_policy() if self.processes is None else self.processes
-        with Pool(processes=min(cpu_count(), proc_count)) as pool:
+        with Pool(processes=self.processes) as pool:
             arg = [(self.row_keys[i], self.row) for i in range(self.row)] + \
                 [(self.col_keys[i], self.col) for i in range(self.col)]
-            all_patterns = pool.map(Pattern.patterns_from_map, arg)
-            self.row_patterns = all_patterns[:self.row]
-            self.col_patterns = all_patterns[self.row:]
+            # all_patterns = pool.map(Pattern.patterns_from_map, arg)
+            for i, patterns in enumerate(pool.imap(Pattern.patterns_from_map, arg)):
+                sys.stderr.write('\rdone {0:%}'.format((i+1)/len(arg)))
+                if i < self.row:
+                    self.row_patterns.append(patterns)
+                else:
+                    self.col_patterns.append(patterns)
+            sys.stderr.write('\n')
+            # self.row_patterns = all_patterns[:self.row]
+            # self.col_patterns = all_patterns[self.row:]
 
     def consensus(self, pattern):
         thresh = pattern.shape[0]

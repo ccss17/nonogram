@@ -59,7 +59,7 @@ class Pattern:
     def combinations(cls, space, num):
         for v in cls.division_with_filled_space(space, num):
             # for pattern in set(itertools.permutations(v)):
-            for pattern in set(cls.permutations(v)):
+            for pattern in cls.permutations(v):
                 yield pattern
 
     @classmethod
