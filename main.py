@@ -1,5 +1,6 @@
 from nonogram import *
 from patterns import *
+from multiprocessing import *
 from time import time
 from pprint import pprint
 import sys
@@ -237,15 +238,18 @@ def permutations_origin(iterable, r=None):
                 break
         else:
             return
-def test(row_keys, col_keys):
-    nn = NonogramHacker(row_keys, col_keys, processes=1)
+def test(row_keys, col_keys, processes=None):
+    nn = NonogramHacker(row_keys, col_keys, processes)
     start_time = time()
     nn.init_patterns()
-    print(Style.RESET_ALL+f'Init Pattern Time Taken:{round(time()-start_time, 5)} secs')
+    init_patterns_time = time()-start_time
+    print(Style.RESET_ALL+f'Init Pattern Time Taken:{round(init_patterns_time, 5)} secs')
     start_time = time()
     nn.solve()
-    print(Style.RESET_ALL+f'Sovling Time Taken:{round(time()-start_time, 5)} secs')
+    solving_time = time()-start_time
+    print(Style.RESET_ALL+f'Sovling Time Taken:{round(solving_time, 5)} secs')
     nn.draw()
+    return init_patterns_time, solving_time
 
 def main(argv):
     if len(sys.argv) == 2:
@@ -273,6 +277,23 @@ def test_performance():
         row_keys, col_keys = parse_from_file(test_file)
         test(row_keys, col_keys)
 
+def test_processes():
+    # test_file = 'test/55'
+    # test_file = 'test/1010'
+    # test_file = 'test/1515'
+    # test_file = 'test/2020'
+    # test_file = 'test/2525'
+    test_file = 'test/3030'
+    row_keys, col_keys = parse_from_file(test_file)
+    time_lst = []
+    for proc_count in range(cpu_count(), 0, -1):
+        print('Proc', proc_count)
+        time_lst.append((proc_count, sum(test(row_keys, col_keys, proc_count))))
+    print(time_lst)
+    print('Best:', min(time_lst, key=lambda x:x[1]))
+    print('Worst:', max(time_lst, key=lambda x:x[1]))
+
 if __name__ == '__main__':
-    main(sys.argv)
-    # test_performance()
+    # main(sys.argv)
+    test_performance()
+    # test_processes()

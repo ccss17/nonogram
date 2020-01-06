@@ -29,8 +29,10 @@ class Nonogram:
     def init_patterns(self):
         def processes_policy():
             longest = max(self.row, self.col)
-            if longest <= 10:
+            if longest <= 5:
                 return 1
+            if longest <= 10:
+                return 2
             elif longest <= 15:
                 return 3
             elif longest <= 25:
