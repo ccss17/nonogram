@@ -72,7 +72,11 @@ class Pattern:
         # arg[3] -> length
         start_time = time()
         result = cls.patterns(arg[2], arg[3])
-        return arg[0], arg[1], result, (time()-start_time, sum(arg[2]), len(arg[2]), len(arg[2])/sum(arg[2]))
+        if sum(arg[2]) != 0:
+            timedata = (time()-start_time, sum(arg[2]), len(arg[2]), len(arg[2])/sum(arg[2]))
+        else:
+            timedata = (time()-start_time, sum(arg[2]), len(arg[2]), 0)
+        return arg[0], arg[1], result, timedata
 
     @classmethod
     def patterns(cls, key, length):
