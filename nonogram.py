@@ -25,6 +25,7 @@ class Nonogram:
         self.coordinate = np.zeros((self.row, self.col), dtype=DTYPE)
         self.row_patterns = [None]*self.row
         self.col_patterns = [None]*self.col
+
         def _processes_policy(processes):
             if processes is None:
                 longest = max(self.row, self.col)
@@ -42,25 +43,49 @@ class Nonogram:
         self.processes = _processes_policy(processes)
         self.init_patterns()
 
-
     def init_patterns(self):
         with Pool(processes=self.processes) as pool:
-            args = [('row', i, self.row_keys[i], self.row) for i in range(self.row)] 
-            args += [('col', i, self.col_keys[i], self.col) for i in range(self.col)]
-            works_count = len(args)
-            chunksize = works_count // (self.processes * 4)
+            args = [('r', i, self.row_keys[i], self.row)
+                    for i in range(self.row)]
+            args += [('c', i, self.col_keys[i], self.col)
+                     for i in range(self.col)]
+            tasks_count = len(args)
+            chunksize = tasks_count // (self.processes * 4)
             for i, result in enumerate(pool.imap_unordered(Pattern.patterns_from_map,
                                                            args,
                                                            chunksize=chunksize)):
-                sys.stderr.write('\rDoen {0:%}'.format(i/works_count))
-                if result[0] == 'row':
+                sys.stderr.write('\rDoen {0:%}'.format(i/tasks_count))
+                # result[0] -> 'r' or 'c'
+                # result[1] -> index
+                # result[2] -> patterns
+                if result[0] == 'r':
                     self.row_patterns[result[1]] = result[2]
+                    self.sync_row(result[1])
                 else:
                     self.col_patterns[result[1]] = result[2]
+                    self.sync_col(result[1])
             else:
                 print()
 
-    def consensus(self, pattern):
+    def sync_patterns_row(self, index):
+        if not np.count_nonzero(self.coordinate[index]) == self.row:
+            self.row_patterns[index] = self.consistent_patterns(
+                self.row_patterns[index], self.coordinate[index])
+
+    def sync_patterns_col(self, index):
+        if not np.count_nonzero(self.coordinate[:, index]) == self.col:
+            self.col_patterns[index] = self.consistent_patterns(
+                self.col_patterns[index], self.coordinate[:, index])
+
+    def sync_col(self, index):
+        self.coordinate[:, index] = np.bitwise_or(
+            self.coordinate[:, index], self.pattern_consensus(self.col_patterns[index]))
+
+    def sync_row(self, index):
+        self.coordinate[index] = np.bitwise_or(
+            self.coordinate[index], self.pattern_consensus(self.row_patterns[index]))
+
+    def pattern_consensus(self, pattern):
         thresh = pattern.shape[0]
         def check_B(x): return 1 * (x == thresh)
         def check_W(x): return -1 * (x == -thresh)
@@ -76,12 +101,8 @@ class Nonogram:
                 consistency.append(i)
         return pattern_set[consistency]
 
-    def status(self):
-        percentage = round((np.count_nonzero(self.coordinate) /
-                            (self.row * self.col)) * 100, 1)
-        print(f'[{self.row}X{self.col}] coordinate({percentage}%):')
-        print(self.coordinate)
 
+class NonogramHacker(Nonogram):
     def draw(self):
         if self.solved:
             base = np.where(self.coordinate == 1,
@@ -91,42 +112,39 @@ class Nonogram:
         else:
             print('Nonogram is not solved yet...')
 
+    def status(self):
+        percentage = round((np.count_nonzero(self.coordinate) /
+                            (self.row * self.col)) * 100, 1)
+        print(f'[{self.row}X{self.col}] coordinate({percentage}%):')
+        print(self.coordinate)
 
-class NonogramHacker(Nonogram):
     def verify(self):
         return False if 0 in self.coordinate else True
 
     def sync_consensus(self):
         for i in range(self.row):
-            self.coordinate[i] = np.bitwise_or(
-                self.coordinate[i], self.consensus(self.row_patterns[i]))
+            self.sync_row(i)
         for i in range(self.col):
-            self.coordinate[:, i] = np.bitwise_or(
-                self.coordinate[:, i], self.consensus(self.col_patterns[i]))
+            self.sync_col(i)
 
     def sync_patterns(self):
         for i in range(self.row):
-            if not np.count_nonzero(self.coordinate[i]) == self.row:
-                self.row_patterns[i] = self.consistent_patterns(
-                    self.row_patterns[i], self.coordinate[i])
+            self.sync_patterns_row(i)
         for i in range(self.col):
-            if not np.count_nonzero(self.coordinate[:, i]) == self.col:
-                self.col_patterns[i] = self.consistent_patterns(
-                    self.col_patterns[i], self.coordinate[:, i])
+            self.sync_patterns_col(i)
 
     def solve(self):
-        self.sync_consensus()
-        nonzero = np.count_nonzero(self.coordinate)
+        prev_nonzero_count = np.count_nonzero(self.coordinate)
         while not self.verify():
             self.sync_patterns()
             self.sync_consensus()
-            tmp = np.count_nonzero(self.coordinate)
-            if nonzero == tmp:
+            nonzero_count = np.count_nonzero(self.coordinate)
+            if prev_nonzero_count == nonzero_count:
                 print("I can't solve this anymore...")
                 self.status()
                 break
             else:
-                nonzero = tmp
+                prev_nonzero_count = nonzero_count
         else:
             self.solved = True
 

@@ -273,11 +273,7 @@ def test_processes():
     print('Worst:', max(time_lst, key=lambda x:x[1]))
 
 if __name__ == '__main__':
-    main(sys.argv)
+    # main(sys.argv)
+    # test_target = [1, 0, 0, 0]
     test_performance()
     # test_processes()
-
-    # ll = 10**5
-    # for i in range(ll):
-    #     sys.stderr.write('\rdone {0:%}'.format((i+1)/ll))
-    # sys.stderr.write('\n')

@@ -28,45 +28,17 @@ python main.py test/3030
 
 ## TODO
 
-- ㅇㅇ 
-
 - 패턴을 만듦과 동시에 풀기 시작하기
 
   - 현재는 패턴생성 -> 풀기 이렇게 이산적으로 하고 있는데 다이나믹하게 패턴을 만들면서 풀기 
 
-- Pool.map -> Pool.imap or async... (메모리 효율 + 생성자에서 stuck)
-
-- 자료구조 단순화 : True, False 를 비트 단위의 1, 0 으로 대체하고 이 자료를 계산하는 방식도 bit 연산자로 교체 
-
 - 메모리 절약 : combinations 까지는 generator 라서 괜찮은데 patterns 부터 패턴을 저장하는 np.array 가 너무 커짐. 
 
-  - _divisions(list)->
-
-  - _division_with_filled_space(yield)->
-
-  - combinations(yield)->
-
-  - patterns(np.array)->
-
-  - pool.map(list)
+  - divisions(yield)-> - combinations(yield)-> - patterns(np.array)-> - pool.map(list)
 
 - C 언어 사용 : combination 까지는 privimitve 타입을 ㅏㅅ용하기 때문에 C 언어로 대체하여 속도 올릴 수 있지 않을까 
 
-  - _divisions(primitive)->
-
-  - _division_with_filled_space(primitive)->
-
-  - combinations(primitive)->
-
-  - patterns(numpy)->
-
-  - pool.map(numpy)
-
-- Patterns 클래스에서도 순수하게 numpy.array 사용 
-
-  - _divisions -> squeeze 함수 
-
-  - _divisions_with_filled_space -> broadcast or 확장관련함수 
+  - divisions(primitive)-> - combinations(primitive)-> - patterns(numpy)-> - pool.map(numpy)
 
 ## Philosophy
 
