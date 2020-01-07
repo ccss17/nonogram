@@ -70,7 +70,9 @@ class Pattern:
         # arg[1] -> index
         # arg[2] -> keys
         # arg[3] -> length
-        return arg[0], arg[1], cls.patterns(arg[2], arg[3])
+        start_time = time()
+        result = cls.patterns(arg[2], arg[3])
+        return arg[0], arg[1], result, (time()-start_time, sum(arg[2]), len(arg[2]), len(arg[2])/sum(arg[2]))
 
     @classmethod
     def patterns(cls, key, length):
@@ -88,7 +90,7 @@ class Pattern:
             return np.array([pattern], dtype=DTYPE)
 
         white_block_patterns = cls._white_block_patterns(S + 1, VARIABLE_FACTOR)
-        pattern_set = np.zeros((1, length), dtype=DTYPE)
+        pattern_set = None
         for white_block_pattern in white_block_patterns:
             pattern = []
             for i, white_block in enumerate(white_block_pattern):
@@ -97,7 +99,7 @@ class Pattern:
                     pattern += ones(key[i])
                     if i != S - 1:
                         pattern.append(-1)
-            if pattern_set[0, 0] == 0:
+            if pattern_set is None:
                 pattern_set = np.array([pattern], dtype=DTYPE)
             else:
                 pattern_set = np.append(pattern_set, np.array(
