@@ -5,7 +5,7 @@ from time import time
 
 
 def full(num, count):
-    return [num for _ in range(count)]
+    return [num] * count 
 
 
 def zeros(count):
@@ -64,7 +64,11 @@ class Pattern:
 
     @classmethod
     def patterns_from_map(cls, arg):
-        return cls.patterns(arg[0], arg[1])
+        # 0: 'row' or 'col'
+        # 1: index
+        # 2: keys
+        # 3: length
+        return arg[0], arg[1], cls.patterns(arg[2], arg[3])
 
     @classmethod
     def patterns(cls, key, length):

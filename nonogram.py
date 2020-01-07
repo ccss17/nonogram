@@ -3,6 +3,7 @@ import numpy as np
 from colorama import Fore, Style, init
 from patterns import *
 from config import *
+import sys
 
 init()
 
@@ -22,31 +23,42 @@ class Nonogram:
         self.row = len(self.row_keys)
         self.col = len(self.col_keys)
         self.coordinate = np.zeros((self.row, self.col), dtype=DTYPE)
-        self.row_patterns = []
-        self.col_patterns = []
-        self.processes = processes
+        self.row_patterns = [None]*self.row
+        self.col_patterns = [None]*self.col
+        def _processes_policy(processes):
+            if processes is None:
+                longest = max(self.row, self.col)
+                if longest <= 5:
+                    return 1
+                if longest <= 10:
+                    return 2
+                elif longest <= 15:
+                    return 3
+                elif longest <= 25:
+                    return 5
+                else:
+                    return cpu_count()
+            return min(cpu_count(), processes)
+        self.processes = _processes_policy(processes)
+        self.init_patterns()
+
 
     def init_patterns(self):
-        def processes_policy():
-            longest = max(self.row, self.col)
-            if longest <= 5:
-                return 1
-            if longest <= 10:
-                return 2
-            elif longest <= 15:
-                return 3
-            elif longest <= 25:
-                return 5
+        with Pool(processes=self.processes) as pool:
+            args = [('row', i, self.row_keys[i], self.row) for i in range(self.row)] 
+            args += [('col', i, self.col_keys[i], self.col) for i in range(self.col)]
+            works_count = len(args)
+            chunksize = works_count // (self.processes * 4)
+            for i, result in enumerate(pool.imap_unordered(Pattern.patterns_from_map,
+                                                           args,
+                                                           chunksize=chunksize)):
+                sys.stderr.write('\rDoen {0:%}'.format(i/works_count))
+                if result[0] == 'row':
+                    self.row_patterns[result[1]] = result[2]
+                else:
+                    self.col_patterns[result[1]] = result[2]
             else:
-                return cpu_count()
-
-        proc_count = processes_policy() if self.processes is None else self.processes
-        with Pool(processes=min(cpu_count(), proc_count)) as pool:
-            arg = [(self.row_keys[i], self.row) for i in range(self.row)] + \
-                [(self.col_keys[i], self.col) for i in range(self.col)]
-            all_patterns = pool.map(Pattern.patterns_from_map, arg)
-            self.row_patterns = all_patterns[:self.row]
-            self.col_patterns = all_patterns[self.row:]
+                print()
 
     def consensus(self, pattern):
         thresh = pattern.shape[0]
@@ -118,14 +130,16 @@ class NonogramHacker(Nonogram):
         else:
             self.solved = True
 
+
 def parse_from_text(keystext):
     def parse(keytext):
         return tuple(tuple(map(int, _.split(' ')))
                      for _ in keytext.split(';'))
     keytext = keystext.split('\n\n')
-    rowkeytext =';'.join(keytext[0].split('\n'))
-    colkeytext =';'.join(keytext[1].split('\n'))
+    rowkeytext = ';'.join(keytext[0].split('\n'))
+    colkeytext = ';'.join(keytext[1].split('\n'))
     return parse(rowkeytext), parse(colkeytext)
+
 
 def parse_from_file(filename):
     with open(filename) as f:

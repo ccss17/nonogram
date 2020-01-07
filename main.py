@@ -214,9 +214,8 @@ m 개의 공을 n 개의 자리에 배치하는 경우의 수
 '''
 
 def test(row_keys, col_keys, processes=None):
-    nn = NonogramHacker(row_keys, col_keys, processes)
     start_time = time()
-    nn.init_patterns()
+    nn = NonogramHacker(row_keys, col_keys, processes)
     init_patterns_time = time()-start_time
     start_time = time()
     nn.solve()
@@ -275,5 +274,5 @@ def test_processes():
 
 if __name__ == '__main__':
     main(sys.argv)
-    # test_performance()
+    test_performance()
     # test_processes()
