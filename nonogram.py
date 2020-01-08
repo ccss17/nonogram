@@ -87,7 +87,7 @@ class Nonogram:
             else:
                 print()
             time_list.sort(key=lambda x:x[0])
-            pprint(time_list)
+            # pprint(time_list)
     '''
     Sample 1
     (0.0, 21, 1, 0.047619047619047616),
