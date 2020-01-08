@@ -221,7 +221,7 @@ def test(row_keys, col_keys, processes=None):
     start_time = time()
     nn.solve()
     solving_time = time()-start_time
-    # nn.draw()
+    nn.draw()
     return init_patterns_time, solving_time
 
 def main(argv):
@@ -269,6 +269,6 @@ def test_processes():
     print('Worst:', max(time_lst, key=lambda x:x[1]))
 
 if __name__ == '__main__':
-    # main(sys.argv)
-    test_performance()
+    main(sys.argv)
+    # test_performance()
     # test_processes()
