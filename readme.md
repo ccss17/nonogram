@@ -8,6 +8,8 @@
 
 ![preivew](res/preview.gif)
 
+![preivew2](res/preview2.gif)
+
 ```shell
 # try sample like this
 python main.py test/55.txt
