@@ -71,23 +71,25 @@ class Nonogram:
                                                            chunksize=chunksize)):
                 sys.stderr.write(
                     '\rCalculating patterns {0:.1%}'.format((i+1) / tasks_count))
+                # print()
                 # result[0] -> 'r' or 'c'
                 # result[1] -> index
                 # result[2] -> patterns
                 if result[0] == 'r':
                     # opp['r'][result[1]] = None
                     self.row_patterns[result[1]] = result[2]
-                    self.sync_row(result[1])
+                    self.sync_coordinate_row(result[1])
                 else:
                     # opp['c'][result[1]] = None
                     self.col_patterns[result[1]] = result[2]
-                    self.sync_col(result[1])
+                    self.sync_coordinate_col(result[1])
                 # print(opp)
-                time_list.append(result[3])
+                time_list.append((result[0], result[1], result[3]))
+                # print(self.coordinate)
             else:
                 print()
-            time_list.sort(key=lambda x:x[0])
-            pprint(time_list)
+            time_list.sort(key=lambda x:x[2][0])
+            # pprint(time_list)
     '''
     Sample 1
     (0.0, 21, 1, 0.047619047619047616),
@@ -216,6 +218,22 @@ class Nonogram:
     (0.9292669296264648, 12, 6, 0.5)
     '''
 
+    def consistent_patterns(self, pattern_set, line):
+        nonzero_indices = np.nonzero(line)[0]
+        confirmation = line[nonzero_indices]
+        consistency = []
+        for i, pattern in enumerate(pattern_set):
+            if np.array_equal(confirmation, pattern[nonzero_indices]):
+                consistency.append(i)
+        return pattern_set[consistency]
+
+    def pattern_consensus(self, pattern):
+        thresh = pattern.shape[0]
+        def check_B(x): return 1 * (x == thresh)
+        def check_W(x): return -1 * (x == -thresh)
+        dist = np.sum(pattern, axis=0)
+        return check_B(dist) + check_W(dist)
+
     def sync_patterns_row(self, index):
         if not np.count_nonzero(self.coordinate[index]) == self.row:
             self.row_patterns[index] = self.consistent_patterns(
@@ -226,29 +244,13 @@ class Nonogram:
             self.col_patterns[index] = self.consistent_patterns(
                 self.col_patterns[index], self.coordinate[:, index])
 
-    def sync_col(self, index):
-        self.coordinate[:, index] = np.bitwise_or(
-            self.coordinate[:, index], self.pattern_consensus(self.col_patterns[index]))
-
-    def sync_row(self, index):
+    def sync_coordinate_row(self, index):
         self.coordinate[index] = np.bitwise_or(
             self.coordinate[index], self.pattern_consensus(self.row_patterns[index]))
 
-    def pattern_consensus(self, pattern):
-        thresh = pattern.shape[0]
-        def check_B(x): return 1 * (x == thresh)
-        def check_W(x): return -1 * (x == -thresh)
-        dist = np.sum(pattern, axis=0)
-        return check_B(dist) + check_W(dist)
-
-    def consistent_patterns(self, pattern_set, line):
-        nonzero_indices = np.nonzero(line)[0]
-        confirmation = line[nonzero_indices]
-        consistency = []
-        for i, pattern in enumerate(pattern_set):
-            if np.array_equal(confirmation, pattern[nonzero_indices]):
-                consistency.append(i)
-        return pattern_set[consistency]
+    def sync_coordinate_col(self, index):
+        self.coordinate[:, index] = np.bitwise_or(
+            self.coordinate[:, index], self.pattern_consensus(self.col_patterns[index]))
 
 
 class NonogramHacker(Nonogram):
@@ -272,9 +274,9 @@ class NonogramHacker(Nonogram):
 
     def sync_consensus(self):
         for i in range(self.row):
-            self.sync_row(i)
+            self.sync_coordinate_row(i)
         for i in range(self.col):
-            self.sync_col(i)
+            self.sync_coordinate_col(i)
 
     def sync_patterns(self):
         for i in range(self.row):
