@@ -2,7 +2,7 @@
 
 [What is nonogram?](https://en.wikipedia.org/wiki/Nonogram)
 
-[네모로직이란?](https://namu.wiki/w/%EB%85%B8%EB%85%B8%EA%B7%B8%EB%9E%A8https://namu.wiki/w/%EB%85%B8%EB%85%B8%EA%B7%B8%EB%9E%A8)
+[네모로직이란?](https://ko.wikipedia.org/wiki/%EB%85%B8%EB%85%B8%EA%B7%B8%EB%9E%A8)
 
 ## Demo / Usage
 
