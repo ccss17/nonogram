@@ -16,9 +16,9 @@ xoxoo
 가장 처음 키값을 둔다. 
 '''
 
-# n 개의 자리. m 개의 공 
+# n 개의 자리. m 개의 공
 
-# 3 개의 자리. 2 개의 공 
+# 3 개의 자리. 2 개의 공
 '''
 (oo) () ()
 () (oo) ()
@@ -27,7 +27,7 @@ xoxoo
 (o) () (o)
 () (o) (o)
 '''
-# 3 개의 자리. 3 개의 공 
+# 3 개의 자리. 3 개의 공
 '''
 (ooo) () ()
 () (ooo) ()
@@ -213,10 +213,10 @@ m 개의 공을 n 개의 자리에 배치하는 경우의 수
     n(n + 3 - 10^(1/2))(n + 3 + 10^(1/2))/6
 '''
 
+
 def test(row_keys, col_keys, processes=None):
-    nn = NonogramHacker(row_keys, col_keys, processes)
     start_time = time()
-    nn.init_patterns()
+    nn = NonogramHacker(row_keys, col_keys, processes)
     init_patterns_time = time()-start_time
     start_time = time()
     nn.solve()
@@ -224,18 +224,26 @@ def test(row_keys, col_keys, processes=None):
     nn.draw()
     return init_patterns_time, solving_time
 
+
 def main(argv):
     if len(sys.argv) == 2:
         row_keys, col_keys = parse_from_file(sys.argv[1])
     else:
+        print('pass argument(filename)')
+        return
+
         # row_keys, col_keys = parse_from_file('test/55')
         # row_keys, col_keys = parse_from_file('test/1010')
         # row_keys, col_keys = parse_from_file('test/1515')
         # row_keys, col_keys = parse_from_file('test/2020')
         # row_keys, col_keys = parse_from_file('test/2525')
-        row_keys, col_keys = parse_from_file('test/3030')
+        # row_keys, col_keys = parse_from_file('test/3030')
 
-    test(row_keys, col_keys)
+    init_patterns_time, solving_time = test(row_keys, col_keys)
+    floating_point = 3
+    print(
+        f'Time Taken(Init Pattern/Solving):{round(init_patterns_time, floating_point)}/{round(solving_time, 4)} secs')
+
 
 def test_performance():
     test_files = [
@@ -249,8 +257,10 @@ def test_performance():
     for test_file in test_files:
         row_keys, col_keys = parse_from_file(test_file)
         init_patterns_time, solving_time = test(row_keys, col_keys)
-        floating_point = 4
-        print(f'Time Taken(Init Pattern/Solving):{round(init_patterns_time, floating_point)}/{round(solving_time, 4)} secs')
+        floating_point = 3
+        print(
+            f'Time Taken(Init Pattern/Solving):{round(init_patterns_time, floating_point)}/{round(solving_time, 4)} secs')
+
 
 def test_processes():
     # test_file = 'test/55'
@@ -263,12 +273,17 @@ def test_processes():
     time_lst = []
     for proc_count in range(cpu_count(), 0, -1):
         print('Proc', proc_count)
-        time_lst.append((proc_count, sum(test(row_keys, col_keys, proc_count))))
+        time_lst.append(
+            (proc_count, sum(test(row_keys, col_keys, proc_count))))
     print(time_lst)
-    print('Best:', min(time_lst, key=lambda x:x[1]))
-    print('Worst:', max(time_lst, key=lambda x:x[1]))
+    print('Best:', min(time_lst, key=lambda x: x[1]))
+    print('Worst:', max(time_lst, key=lambda x: x[1]))
+
 
 if __name__ == '__main__':
     main(sys.argv)
+    # print(Pattern.patterns([2,2,1,1,1,1,2], 30))
+    # print(Pattern.patterns([3,1,1,1,1,1,1,2], 30))
+    # test_target = [1, 0, 0, 0]
     # test_performance()
     # test_processes()
