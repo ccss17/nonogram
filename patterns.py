@@ -59,7 +59,7 @@ class Pattern:
             iterable[l], iterable[i] = iterable[i], iterable[l]  # backtrack
 
     @classmethod
-    def _white_block_patterns(cls, space, num):
+    def white_cell_patterns(cls, space, num):
         for v in cls.divisions(num, space, fill_space=True):
             for pattern in cls.permutations_without_duplication(v):
                 yield pattern
@@ -93,12 +93,12 @@ class Pattern:
                     pattern.append(-1)
             return np.array([pattern], dtype=DTYPE)
 
-        white_block_patterns = cls._white_block_patterns(S + 1, VARIABLE_FACTOR)
+        white_cell_patterns = cls.white_cell_patterns(S + 1, VARIABLE_FACTOR)
         pattern_set = None
-        for white_block_pattern in white_block_patterns:
+        for white_cell_pattern in white_cell_patterns:
             pattern = []
-            for i, white_block in enumerate(white_block_pattern):
-                pattern += minus(white_block)
+            for i, white_cell in enumerate(white_cell_pattern):
+                pattern += minus(white_cell)
                 if i < S:
                     pattern += ones(key[i])
                     if i != S - 1:

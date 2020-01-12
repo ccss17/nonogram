@@ -84,11 +84,12 @@ class Nonogram:
                     self.col_patterns[result[1]] = result[2]
                     self.sync_coordinate_col(result[1])
                 # print(opp)
-                time_list.append((result[0], result[1], result[3]))
+                # time_list.append((result[0], result[1], result[3]))
+                print((result[0], result[1], result[3]))
                 # print(self.coordinate)
             else:
                 print()
-            time_list.sort(key=lambda x:x[2][0])
+            # time_list.sort(key=lambda x:x[2][0])
             # pprint(time_list)
     '''
     Sample 1
@@ -229,10 +230,10 @@ class Nonogram:
 
     def pattern_consensus(self, pattern):
         thresh = pattern.shape[0]
-        def check_B(x): return 1 * (x == thresh)
-        def check_W(x): return -1 * (x == -thresh)
+        def black_cell(x): return 1 * (x == thresh)
+        def white_cell(x): return -1 * (x == -thresh)
         dist = np.sum(pattern, axis=0)
-        return check_B(dist) + check_W(dist)
+        return black_cell(dist) + white_cell(dist)
 
     def sync_patterns_row(self, index):
         if not np.count_nonzero(self.coordinate[index]) == self.row:
