@@ -16,9 +16,7 @@
 
 ## Demo / Usage
 
-![preivew](res/preview.gif)
-
-![preivew2](res/preview2.gif)
+![preview](https://user-images.githubusercontent.com/16812446/72774497-29863b80-3c4e-11ea-8e14-60b2f4c06b74.gif)
 
 ```shell
 # try sample like this
@@ -40,7 +38,7 @@ python -m pip install numpy colorama
 
 - `5X5` 네모로직의 샘플 파일입니다. (출처 : http://nemonemologic.com/play_logic.php?quid=10214&page=0&size=5)
 
-  ![55](res/55.png)
+  ![55](https://user-images.githubusercontent.com/16812446/72774532-4d498180-3c4e-11ea-94df-0bc3c851a379.png)
 
   네모로직을 보면서 다음과 같은 형식으로 가로 키와 세로키를 파일에 저장합니다. 
 
@@ -60,7 +58,7 @@ python -m pip install numpy colorama
 
 - `10X10` 네모로직의 샘플 파일입니다. (출처 : http://nemonemologic.com/play_logic.php?quid=10158&page=0&size=10)
 
-  ![1010](res/1010.png)
+  ![1010](https://user-images.githubusercontent.com/16812446/72774538-53d7f900-3c4e-11ea-8cb4-2d6716d42533.png)
 
   네모로직을 보면서 다음과 같은 형식으로 가로 키와 세로키를 파일에 저장합니다. 
 
@@ -78,7 +76,7 @@ python -m pip install numpy colorama
 
 - `15X15` 네모로직의 샘플 파일입니다. (출처 : http://nemonemologic.com/play_logic.php?quid=10170&page=0&size=15)
 
-  ![1515](res/1515.png)
+  ![1515](https://user-images.githubusercontent.com/16812446/72774545-5a667080-3c4e-11ea-951d-7668876134ac.png)
 
   네모로직을 보면서 다음과 같은 형식으로 가로 키와 세로키를 파일에 저장합니다. 
 
@@ -96,7 +94,7 @@ python -m pip install numpy colorama
 
 - `20X20` 네모로직의 샘플 파일입니다. (출처 : http://nemonemologic.com/play_logic.php?quid=10144&page=0&size=20)
 
-  ![2020](res/2020.png)
+  ![2020](https://user-images.githubusercontent.com/16812446/72774553-60f4e800-3c4e-11ea-97fb-69e4da7488a7.png)
 
   네모로직을 보면서 다음과 같은 형식으로 가로 키와 세로키를 파일에 저장합니다. 
 
@@ -116,7 +114,7 @@ python -m pip install numpy colorama
 
 - `25X25` 네모로직의 샘플 파일입니다. (출처 : http://nemonemologic.com/play_logic.php?quid=9982&page=0&size=25)
 
-  ![2525](res/2525.png)
+  ![2525](https://user-images.githubusercontent.com/16812446/72774557-66eac900-3c4e-11ea-9420-b733b1b3eee9.png)
 
   네모로직을 보면서 다음과 같은 형식으로 가로 키와 세로키를 파일에 저장합니다. 
 
@@ -138,7 +136,7 @@ python -m pip install numpy colorama
 
 - `30X30` 네모로직의 샘플 파일입니다. (출처 : http://nemonemologic.com/play_logic.php?quid=10058&page=4&size=30)
 
-  ![3030](res/3030.png)
+  ![3030](https://user-images.githubusercontent.com/16812446/72774566-6ce0aa00-3c4e-11ea-90ce-1703bd6bdc8f.png)
 
   네모로직을 보면서 다음과 같은 형식으로 가로 키와 세로키를 파일에 저장합니다. 
 
