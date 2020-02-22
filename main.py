@@ -214,37 +214,6 @@ m 개의 공을 n 개의 자리에 배치하는 경우의 수
 '''
 
 
-def test(row_keys, col_keys, processes=None):
-    start_time = time()
-    nn = NonogramHacker(row_keys, col_keys, processes)
-    init_patterns_time = time()-start_time
-    start_time = time()
-    nn.solve()
-    solving_time = time()-start_time
-    nn.draw()
-    return init_patterns_time, solving_time
-
-
-def main(argv):
-    if len(sys.argv) == 2:
-        row_keys, col_keys = parse_from_file(sys.argv[1])
-    else:
-        print('pass argument(filename)')
-        return
-
-        # row_keys, col_keys = parse_from_file('test/55')
-        # row_keys, col_keys = parse_from_file('test/1010')
-        # row_keys, col_keys = parse_from_file('test/1515')
-        # row_keys, col_keys = parse_from_file('test/2020')
-        # row_keys, col_keys = parse_from_file('test/2525')
-        # row_keys, col_keys = parse_from_file('test/3030')
-
-    init_patterns_time, solving_time = test(row_keys, col_keys)
-    floating_point = 3
-    print(
-        f'Time Taken(Init Pattern/Solving):{round(init_patterns_time, floating_point)}/{round(solving_time, 4)} secs')
-
-
 def test_performance():
     test_files = [
         'test/55',
@@ -278,6 +247,37 @@ def test_processes():
     print(time_lst)
     print('Best:', min(time_lst, key=lambda x: x[1]))
     print('Worst:', max(time_lst, key=lambda x: x[1]))
+
+
+def test(row_keys, col_keys, processes=None):
+    start_time = time()
+    nn = NonogramHacker(row_keys, col_keys, processes)
+    init_patterns_time = time()-start_time
+    start_time = time()
+    nn.solve()
+    solving_time = time()-start_time
+    nn.draw()
+    return init_patterns_time, solving_time
+
+
+def main(argv):
+    if len(sys.argv) == 2:
+        row_keys, col_keys = parse_from_file(sys.argv[1])
+    else:
+        print('pass argument(filename)')
+        return
+
+        # row_keys, col_keys = parse_from_file('test/55')
+        # row_keys, col_keys = parse_from_file('test/1010')
+        # row_keys, col_keys = parse_from_file('test/1515')
+        # row_keys, col_keys = parse_from_file('test/2020')
+        # row_keys, col_keys = parse_from_file('test/2525')
+        # row_keys, col_keys = parse_from_file('test/3030')
+
+    init_patterns_time, solving_time = test(row_keys, col_keys)
+    floating_point = 3
+    print(
+        f'Time Taken(Init Pattern/Solving):{round(init_patterns_time, floating_point)}/{round(solving_time, 4)} secs')
 
 
 if __name__ == '__main__':

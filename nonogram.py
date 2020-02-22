@@ -257,6 +257,8 @@ class Nonogram:
 class NonogramHacker(Nonogram):
     def draw(self):
         if self.solved:
+            # from tabulate import tabulate
+            # print(tabulate(np.where(self.coordinate == 1, 'O', 'X'), tablefmt="fancy_grid"))
             base = np.where(self.coordinate == 1,
                             Draw.blue_block, Draw.white_block)
             for b in base:
