@@ -69,8 +69,8 @@ class Nonogram:
             for i, result in enumerate(pool.imap_unordered(Pattern.patterns_from_map,
                                                            args,
                                                            chunksize=chunksize)):
-                sys.stderr.write(
-                    '\rCalculating patterns {0:.1%}'.format((i+1) / tasks_count))
+                # sys.stderr.write(
+                    # '\rCalculating patterns {0:.1%}'.format((i+1) / tasks_count))
                 # print()
                 # result[0] -> 'r' or 'c'
                 # result[1] -> index
@@ -85,10 +85,11 @@ class Nonogram:
                     self.sync_coordinate_col(result[1])
                 # print(opp)
                 # time_list.append((result[0], result[1], result[3]))
-                print((result[0], result[1], result[3]))
+                # print((result[0], result[1], result[3]))
                 # print(self.coordinate)
             else:
-                print()
+                pass
+                # print()
             # time_list.sort(key=lambda x:x[2][0])
             # pprint(time_list)
     '''
