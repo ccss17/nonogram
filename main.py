@@ -281,7 +281,7 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    ain(sys.argv)
     # print(Pattern.patterns([2,2,1,1,1,1,2], 30))
     # print(Pattern.patterns([3,1,1,1,1,1,1,2], 30))
     # test_target = [1, 0, 0, 0]
