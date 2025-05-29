@@ -31,6 +31,8 @@ python -m pip install numpy colorama
 python main.py test/55.txt
 ```
 
+![](1.png)
+
 <!-- # 여러가지 예를 들어 설명하는 사용법
 
 ## test/55.txt
